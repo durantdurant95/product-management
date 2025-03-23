@@ -3,6 +3,6 @@ export interface Product {
   name: string;
   description: string;
   checked: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }

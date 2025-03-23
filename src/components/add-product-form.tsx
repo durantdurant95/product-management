@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,34 +13,33 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { Product } from "@/lib/types";
+import { createProduct } from "@/lib/productsService";
 import { Plus } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
 
-interface AddProductFormProps {
-  onAddProduct: (product: Omit<Product, "id" | "checked">) => void;
-}
-
-export default function AddProductForm({ onAddProduct }: AddProductFormProps) {
+export default function AddProductForm() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-    if (!name || !description) return;
+  //   if (!name || !description) return;
 
-    onAddProduct({
-      name,
-      description,
-    });
+  //   onAddProduct({
+  //     name,
+  //     description,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //   });
 
-    // Reset form
-    setName("");
-    setDescription("");
-    setOpen(false);
-  };
+  //   // Reset form
+  //   setName("");
+  //   setDescription("");
+  //   setOpen(false);
+  // };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -52,7 +49,16 @@ export default function AddProductForm({ onAddProduct }: AddProductFormProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            createProduct({
+              name,
+              description,
+              checked: false,
+            });
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Add New Product</DialogTitle>
             <DialogDescription>

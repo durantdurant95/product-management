@@ -4,15 +4,9 @@ import { PackageSearch } from "lucide-react";
 
 interface ProductListProps {
   products: Product[];
-  onToggleStatus: (id: string) => void;
-  onDeleteProduct: (id: string) => void;
 }
 
-export default function ProductList({
-  products,
-  onToggleStatus,
-  onDeleteProduct,
-}: ProductListProps) {
+export default function ProductList({ products }: ProductListProps) {
   if (products.length === 0) {
     return (
       <div className="text-center py-16 border rounded-lg bg-muted/20">
@@ -25,12 +19,7 @@ export default function ProductList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          onToggleStatus={onToggleStatus}
-          onDeleteProduct={onDeleteProduct}
-        />
+        <ProductCard key={product.id} product={product} />
       ))}
     </div>
   );
