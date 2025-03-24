@@ -13,14 +13,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PRODUCT_CREATED_EVENT } from "@/lib/events";
 import { createProduct } from "@/lib/productsService";
 import { Plus } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-// Define a custom event name for product creation
-export const PRODUCT_CREATED_EVENT = "product-created";
 
 export default function AddProductForm() {
   const [open, setOpen] = useState(false);

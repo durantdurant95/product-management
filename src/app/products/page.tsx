@@ -1,11 +1,14 @@
 "use client";
 
-import AddProductForm, {
-  PRODUCT_CREATED_EVENT,
-} from "@/components/add-product-form";
+import AddProductForm from "@/components/add-product-form";
 import { ModeToggle } from "@/components/mode-toggle";
 import ProductCard from "@/components/product-card";
 import ProductFilters from "@/components/product-filters";
+import {
+  PRODUCT_CREATED_EVENT,
+  PRODUCT_DELETED_EVENT,
+  PRODUCT_STATUS_UPDATED_EVENT,
+} from "@/lib/events";
 import { fetchProducts } from "@/lib/productsService";
 import { Product } from "@/lib/types";
 import { ListChecks, Loader } from "lucide-react";
@@ -14,10 +17,6 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const ITEMS_PER_PAGE = 10;
-
-// Create custom events for product operations
-export const PRODUCT_DELETED_EVENT = "product-deleted";
-export const PRODUCT_STATUS_UPDATED_EVENT = "product-status-updated";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
