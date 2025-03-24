@@ -17,11 +17,16 @@ import { createProduct } from "@/lib/productsService";
 import { Plus } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { toast } from "sonner";
+
+// Define a custom event name for product creation
+export const PRODUCT_CREATED_EVENT = "product-created";
 
 export default function AddProductForm() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -34,14 +39,39 @@ export default function AddProductForm() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            createProduct({
+
+            if (!name.trim()) {
+              toast.error("Product name is required");
+              return;
+            }
+
+            const newProduct = {
               name,
               description,
               checked: false,
+            };
+
+            setIsLoading(true);
+
+            toast.promise(createProduct(newProduct), {
+              loading: "Adding product...",
+              success: () => {
+                // Reset form
+                setName("");
+                setDescription("");
+                setOpen(false);
+                setIsLoading(false);
+
+                // Dispatch event to refresh the product list
+                window.dispatchEvent(new Event(PRODUCT_CREATED_EVENT));
+
+                return `Product "${name}" has been added`;
+              },
+              error: (err) => {
+                setIsLoading(false);
+                return "Error adding product";
+              },
             });
-            setName("");
-            setDescription("");
-            setOpen(false);
           }}
         >
           <DialogHeader>
@@ -64,6 +94,7 @@ export default function AddProductForm() {
                 placeholder="Enter product name"
                 className="col-span-3"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -77,11 +108,14 @@ export default function AddProductForm() {
                 placeholder="Enter product description"
                 className="col-span-3"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Add Product</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Adding..." : "Add Product"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

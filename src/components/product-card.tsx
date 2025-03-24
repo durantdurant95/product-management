@@ -1,4 +1,8 @@
 "use client";
+import {
+  PRODUCT_DELETED_EVENT,
+  PRODUCT_STATUS_UPDATED_EVENT,
+} from "@/app/products/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,18 +14,72 @@ import {
 } from "@/components/ui/card";
 import { deleteProduct, updateProductStatus } from "@/lib/productsService";
 import type { Product } from "@/lib/types";
-import { Check, Trash } from "lucide-react";
+import { Check, Loader, Trash } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
+// Update the component props to include onProductDeleted
 interface ProductCardProps {
   product: Product;
+  onProductDeleted?: () => void;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      toast.promise(deleteProduct(product.id), {
+        loading: "Deleting product...",
+        success: () => {
+          // Simplified refresh - using only one method
+          window.dispatchEvent(new Event(PRODUCT_DELETED_EVENT));
+          setIsDeleting(false);
+          return `Product "${product.name}" has been deleted`;
+        },
+        error: (err) => {
+          setIsDeleting(false);
+          return "Error deleting product";
+        },
+      });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      setIsDeleting(false);
+    }
+  };
+
+  const handleStatusUpdate = async () => {
+    try {
+      const newStatus = !product.checked;
+      const statusText = newStatus ? "checked" : "unchecked";
+
+      setIsUpdating(true);
+      toast.promise(updateProductStatus(product.id, newStatus), {
+        loading: "Updating product status...",
+        success: () => {
+          // Simplified refresh - using only one method
+          window.dispatchEvent(new Event(PRODUCT_STATUS_UPDATED_EVENT));
+          setIsUpdating(false);
+          return `Product "${product.name}" has been marked as ${statusText}`;
+        },
+        error: (err) => {
+          setIsUpdating(false);
+          return "Error updating product status";
+        },
+      });
+    } catch (error) {
+      console.error("Error updating product status:", error);
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle>{product.name}</CardTitle>
+          <CardTitle className="py-2">{product.name}</CardTitle>
           {product.checked && (
             <Badge variant="default" className="rounded-full w-8 h-8">
               <Check className="h-6 w-6" />
@@ -57,20 +115,35 @@ export default function ProductCard({ product }: ProductCardProps) {
         <Button
           variant={product.checked ? "outline" : "default"}
           size="sm"
-          type="submit"
+          type="button"
           className="transition-all duration-200"
-          onClick={() => updateProductStatus(product.id, !product.checked)}
+          onClick={handleStatusUpdate}
+          disabled={isUpdating || isDeleting}
         >
-          {product.checked ? "Uncheck" : "Check"}
+          {isUpdating ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Updating...
+            </>
+          ) : product.checked ? (
+            "Uncheck"
+          ) : (
+            "Check"
+          )}
         </Button>
         <Button
           variant="destructive"
           size="icon"
-          type="submit"
+          type="button"
           className="h-8 w-8 transition-all duration-200"
-          onClick={() => deleteProduct(product.id)}
+          onClick={handleDelete}
+          disabled={isDeleting || isUpdating}
         >
-          <Trash className="h-4 w-4" />
+          {isDeleting ? (
+            <Loader className="h-4 w-4 animate-spin" />
+          ) : (
+            <Trash className="h-4 w-4" />
+          )}
         </Button>
       </CardFooter>
     </Card>

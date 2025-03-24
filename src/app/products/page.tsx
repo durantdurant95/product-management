@@ -1,17 +1,23 @@
 "use client";
 
-import AddProductForm from "@/components/add-product-form";
+import AddProductForm, {
+  PRODUCT_CREATED_EVENT,
+} from "@/components/add-product-form";
 import { ModeToggle } from "@/components/mode-toggle";
 import ProductCard from "@/components/product-card";
 import ProductFilters from "@/components/product-filters";
 import { fetchProducts } from "@/lib/productsService";
 import { Product } from "@/lib/types";
-import { ListChecks } from "lucide-react";
+import { ListChecks, Loader } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const ITEMS_PER_PAGE = 10;
+
+// Create custom events for product operations
+export const PRODUCT_DELETED_EVENT = "product-deleted";
+export const PRODUCT_STATUS_UPDATED_EVENT = "product-status-updated";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -19,6 +25,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add a refresh trigger state
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // Parse filter parameters with defaults
@@ -29,7 +36,32 @@ export default function ProductsPage() {
     page: Number(searchParams.get("page") || "1"),
   };
 
-  // Load initial products and on filter change
+  // Create a memoized refresh function
+  const refreshProducts = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
+  // Listen for product events
+  useEffect(() => {
+    const handleProductUpdated = () => {
+      refreshProducts();
+    };
+
+    window.addEventListener(PRODUCT_DELETED_EVENT, handleProductUpdated);
+    window.addEventListener(PRODUCT_STATUS_UPDATED_EVENT, handleProductUpdated);
+    window.addEventListener(PRODUCT_CREATED_EVENT, handleProductUpdated);
+
+    return () => {
+      window.removeEventListener(PRODUCT_DELETED_EVENT, handleProductUpdated);
+      window.removeEventListener(
+        PRODUCT_STATUS_UPDATED_EVENT,
+        handleProductUpdated
+      );
+      window.removeEventListener(PRODUCT_CREATED_EVENT, handleProductUpdated);
+    };
+  }, [refreshProducts]);
+
+  // Load initial products and on filter change or refresh trigger
   useEffect(() => {
     const loadInitialProducts = async () => {
       setLoading(true);
@@ -57,7 +89,7 @@ export default function ProductsPage() {
     };
 
     loadInitialProducts();
-  }, [filters.checked, filters.sortBy, filters.sortOrder]);
+  }, [filters.checked, filters.sortBy, filters.sortOrder, refreshTrigger]); // Add refreshTrigger as dependency
 
   // Set up intersection observer for infinite scroll
   useEffect(() => {
@@ -146,15 +178,19 @@ export default function ProductsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onProductDeleted={refreshProducts} // Pass refresh function to ProductCard
+              />
             ))}
           </div>
         )}
 
         {/* Loading indicator */}
-        <div ref={loaderRef} className="py-4 text-center">
-          {loading && <p>Loading more products...</p>}
-          {!hasMore && products.length > 0 && (
+        <div ref={loaderRef} className="py-4 text-center flex justify-center">
+          {loading && <Loader className="animate-spin" />}
+          {!hasMore && products.length > 0 && !loading && (
             <p className="text-muted-foreground">No more products to load</p>
           )}
         </div>

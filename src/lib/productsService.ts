@@ -28,57 +28,32 @@ export const fetchProducts = async ({
   sortBy?: string;
   sortOrder?: string;
 } = {}): Promise<Product[]> => {
-  // Build query parameters
   const params = new URLSearchParams();
 
-  // Add pagination
-  params.append("page", page.toString());
-  params.append("limit", pageSize.toString());
+  params.append("page", String(page));
+  params.append("limit", String(pageSize));
+  params.append("sortBy", sortBy);
+  params.append("order", sortOrder);
 
-  // Add sorting (MockAPI uses sortBy and order parameters)
-  if (sortBy) {
-    params.append("sortBy", sortBy);
-    params.append("order", sortOrder);
-  }
-
-  // Add checked filter if not null (to filter by completion status)
   if (checked !== null) {
-    params.append("checked", checked.toString());
+    params.append("checked", String(checked));
   }
-
-  console.log(`API Request: ${API_URL}?${params.toString()}`);
 
   try {
-    // Make the API request with query parameters
-    const response = await fetch(`${API_URL}?${params.toString()}`);
+    const response = await fetch(`${API_URL}?${params}`);
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to fetch products: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`Failed to fetch products: ${response.status}`);
     }
 
     const products = await response.json();
-
-    // If we're looking for checked/unchecked items and the API didn't filter properly
-    if (checked !== null && products) {
-      // Handle the case where we get no products back
-      if (!Array.isArray(products)) {
-        console.warn("API did not return an array of products");
-        return [];
-      }
-
-      // Filter on client-side to ensure we get the right results
-      return products.filter(
-        (product: { checked: boolean }) => product.checked === checked
-      );
-    }
-
-    // Make sure we always return an array, even if the API response is unexpected
-    return Array.isArray(products) ? products : [];
+    return Array.isArray(products)
+      ? checked !== null
+        ? products.filter((product) => product.checked === checked)
+        : products
+      : [];
   } catch (error) {
     console.error("Error fetching products:", error);
-    // Return an empty array instead of throwing to avoid breaking the UI
     return [];
   }
 };
@@ -161,6 +136,6 @@ export const deleteProduct = async (id: string): Promise<void> => {
   if (!response.ok) {
     throw new Error(`Failed to delete product with ID: ${id}`);
   }
-  revalidatePath("/");
+  revalidatePath("/products"); // This should indeed be "/products" not "/"
   return response.json();
 };
