@@ -1,8 +1,5 @@
 "use client";
-import {
-  PRODUCT_DELETED_EVENT,
-  PRODUCT_STATUS_UPDATED_EVENT,
-} from "@/app/products/page";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  PRODUCT_DELETED_EVENT,
+  PRODUCT_STATUS_UPDATED_EVENT,
+} from "@/lib/events";
 import { deleteProduct, updateProductStatus } from "@/lib/productsService";
 import type { Product } from "@/lib/types";
 import { Check, Loader, Trash } from "lucide-react";
