@@ -1,42 +1,122 @@
+"use client";
+
 import AddProductForm from "@/components/add-product-form";
 import { ModeToggle } from "@/components/mode-toggle";
 import ProductCard from "@/components/product-card";
 import ProductFilters from "@/components/product-filters";
 import { fetchProducts } from "@/lib/productsService";
+import { Product } from "@/lib/types";
 import { ListChecks } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-interface ProductsPageProps {
-  searchParams: Promise<{
-    status?: string;
-    sortBy?: string;
-    sortOrder?: string;
-    page?: string;
-    pageSize?: string;
-  }>;
-}
+const ITEMS_PER_PAGE = 10;
 
-export default async function ProductsPage(props: ProductsPageProps) {
-  const searchParams = await props.searchParams;
-  // Parse filter parameters with defaults - ensure all are strings for consistent handling
+export default function ProductsPage() {
+  const searchParams = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Parse filter parameters with defaults
   const filters = {
-    status: searchParams.status || "all",
-    sortBy: searchParams.sortBy || "updatedAt",
-    sortOrder: searchParams.sortOrder || "desc",
-    page: Number(searchParams.page || "1"),
-    pageSize: Number(searchParams.pageSize || "10"),
+    checked: searchParams.get("checked"),
+    sortBy: searchParams.get("sortBy") || "updatedAt",
+    sortOrder: searchParams.get("sortOrder") || "desc",
+    page: Number(searchParams.get("page") || "1"),
   };
 
-  console.log("Current filters:", filters); // Debug log
+  // Load initial products and on filter change
+  useEffect(() => {
+    const loadInitialProducts = async () => {
+      setLoading(true);
+      try {
+        // Convert string param to boolean or null
+        let checkedParam = null;
+        if (filters.checked === "true") checkedParam = true;
+        if (filters.checked === "false") checkedParam = false;
 
-  // Fetch products with filtering applied on the backend
-  const products = await fetchProducts({
-    status: filters.status,
-    sortBy: filters.sortBy,
-    sortOrder: filters.sortOrder,
-    page: filters.page,
-    pageSize: filters.pageSize,
-  });
+        const newProducts = await fetchProducts({
+          checked: checkedParam,
+          sortBy: filters.sortBy,
+          sortOrder: filters.sortOrder,
+          page: 1,
+          pageSize: ITEMS_PER_PAGE,
+        });
+        setProducts(newProducts);
+        setHasMore(newProducts.length === ITEMS_PER_PAGE);
+        setCurrentPage(1);
+      } catch (error) {
+        console.error("Error loading products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialProducts();
+  }, [filters.checked, filters.sortBy, filters.sortOrder]);
+
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        if (firstEntry.isIntersecting && hasMore && !loading) {
+          loadMoreProducts();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentLoaderRef = loaderRef.current;
+    if (currentLoaderRef) {
+      observer.observe(currentLoaderRef);
+    }
+
+    return () => {
+      if (currentLoaderRef) {
+        observer.unobserve(currentLoaderRef);
+      }
+    };
+  }, [loaderRef, hasMore, loading]);
+
+  // Function to load more products
+  const loadMoreProducts = async () => {
+    if (loading || !hasMore) return;
+
+    const nextPage = currentPage + 1;
+    setLoading(true);
+
+    try {
+      // Convert string param to boolean or null
+      let checkedParam = null;
+      if (filters.checked === "true") checkedParam = true;
+      if (filters.checked === "false") checkedParam = false;
+
+      const newProducts = await fetchProducts({
+        checked: checkedParam,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        page: nextPage,
+        pageSize: ITEMS_PER_PAGE,
+      });
+
+      if (newProducts.length > 0) {
+        setProducts((prev) => [...prev, ...newProducts]);
+        setCurrentPage(nextPage);
+        setHasMore(newProducts.length === ITEMS_PER_PAGE);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error loading more products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="flex flex-col min-h-screen pb-8">
@@ -59,7 +139,7 @@ export default async function ProductsPage(props: ProductsPageProps) {
         <ProductFilters currentFilters={filters} />
 
         {/* Products grid */}
-        {products.length === 0 ? (
+        {products.length === 0 && !loading ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No products found</p>
           </div>
@@ -70,6 +150,14 @@ export default async function ProductsPage(props: ProductsPageProps) {
             ))}
           </div>
         )}
+
+        {/* Loading indicator */}
+        <div ref={loaderRef} className="py-4 text-center">
+          {loading && <p>Loading more products...</p>}
+          {!hasMore && products.length > 0 && (
+            <p className="text-muted-foreground">No more products to load</p>
+          )}
+        </div>
       </section>
     </main>
   );

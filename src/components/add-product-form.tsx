@@ -23,24 +23,6 @@ export default function AddProductForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (!name || !description) return;
-
-  //   onAddProduct({
-  //     name,
-  //     description,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //   });
-
-  //   // Reset form
-  //   setName("");
-  //   setDescription("");
-  //   setOpen(false);
-  // };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -55,7 +37,7 @@ export default function AddProductForm() {
             createProduct({
               name,
               description,
-              status: "unchecked",
+              checked: false,
             });
             setName("");
             setDescription("");

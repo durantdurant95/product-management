@@ -18,13 +18,13 @@ if (!API_URL) {
 export const fetchProducts = async ({
   page = 1,
   pageSize = 10,
-  status = "all",
+  checked = null,
   sortBy = "updatedAt",
   sortOrder = "desc",
 }: {
   page?: number;
   pageSize?: number;
-  status?: string;
+  checked?: boolean | null;
   sortBy?: string;
   sortOrder?: string;
 } = {}): Promise<Product[]> => {
@@ -41,35 +41,46 @@ export const fetchProducts = async ({
     params.append("order", sortOrder);
   }
 
-  // Some Mock APIs use filter parameter instead of direct parameter name
-  // Try both ways to filter by status
-  if (status !== "all") {
-    // Try direct status parameter
-    params.append("status", status);
-    // Also try filter syntax that some APIs use
-    params.append("filter", `status=${status}`);
+  // Add checked filter if not null (to filter by completion status)
+  if (checked !== null) {
+    params.append("checked", checked.toString());
   }
 
   console.log(`API Request: ${API_URL}?${params.toString()}`);
 
-  // Make the API request with query parameters
-  const response = await fetch(`${API_URL}?${params.toString()}`);
+  try {
+    // Make the API request with query parameters
+    const response = await fetch(`${API_URL}?${params.toString()}`);
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch products");
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch products: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const products = await response.json();
+
+    // If we're looking for checked/unchecked items and the API didn't filter properly
+    if (checked !== null && products) {
+      // Handle the case where we get no products back
+      if (!Array.isArray(products)) {
+        console.warn("API did not return an array of products");
+        return [];
+      }
+
+      // Filter on client-side to ensure we get the right results
+      return products.filter(
+        (product: { checked: boolean }) => product.checked === checked
+      );
+    }
+
+    // Make sure we always return an array, even if the API response is unexpected
+    return Array.isArray(products) ? products : [];
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    // Return an empty array instead of throwing to avoid breaking the UI
+    return [];
   }
-
-  const products = await response.json();
-
-  // Fallback: If we still get all products when filtering,
-  // perform client-side filtering
-  if (status !== "all" && products.length > 0) {
-    return products.filter(
-      (product: { status: string }) => product.status === status
-    );
-  }
-
-  return products;
 };
 
 /**
@@ -112,7 +123,7 @@ export const createProduct = async (
 };
 
 /**
- * Update the status of an existing product by ID.
+ * Update the checked status of an existing product by ID.
  * @param {string} id - The ID of the product to update status for.
  * @param {boolean} checked - Whether the product is checked or not.
  * @returns {Promise<Product>} A promise that resolves to the updated product.
@@ -127,7 +138,7 @@ export const updateProductStatus = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      status: checked ? "checked" : "unchecked",
+      checked,
       updatedAt: new Date(),
     }),
   });

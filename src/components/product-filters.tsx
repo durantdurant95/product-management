@@ -14,11 +14,10 @@ import { useCallback, useEffect, useState } from "react";
 
 interface ProductFiltersProps {
   currentFilters: {
-    status: string;
+    checked: string | null; // Using string to handle URL param values
     sortBy: string;
     sortOrder: string;
     page: number;
-    pageSize: number;
   };
 }
 
@@ -60,25 +59,25 @@ export default function ProductFilters({
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 rounded-lg">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="status">Status</Label>
+        <Label htmlFor="checked">Status</Label>
         <Select
-          key={`status-${filters.status}`} // Force re-render on value change
-          defaultValue={filters.status}
+          key={`checked-${filters.checked}`} // Force re-render on value change
+          defaultValue={filters.checked || "all"}
           onValueChange={(value) => {
-            console.log(`Setting status to: ${value}`);
+            console.log(`Setting checked to: ${value}`);
             // Update local state first for immediate UI feedback
-            setFilters((prev) => ({ ...prev, status: value }));
+            setFilters((prev) => ({ ...prev, checked: value }));
             // Then update URL params
-            updateParams({ status: value });
+            updateParams({ checked: value });
           }}
         >
-          <SelectTrigger id="status" className="w-[180px]">
+          <SelectTrigger id="checked" className="w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="checked">Checked</SelectItem>
-            <SelectItem value="unchecked">Unchecked</SelectItem>
+            <SelectItem value="true">Checked</SelectItem>
+            <SelectItem value="false">Unchecked</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -124,45 +123,21 @@ export default function ProductFilters({
         </Select>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="pageSize">Items Per Page</Label>
-        <Select
-          key={`pageSize-${filters.pageSize}`}
-          defaultValue={filters.pageSize.toString()}
-          onValueChange={(value) => {
-            setFilters((prev) => ({ ...prev, pageSize: Number(value) }));
-            updateParams({ pageSize: value });
-          }}
-        >
-          <SelectTrigger id="pageSize" className="w-[180px]">
-            <SelectValue placeholder="Items per page" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="5">5</SelectItem>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="20">20</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       <div className="flex items-end ml-auto">
         <Button
           variant="outline"
           onClick={() => {
             const defaultFilters = {
-              status: "all",
+              checked: "all",
               sortBy: "updatedAt",
               sortOrder: "desc",
               page: "1",
-              pageSize: "10",
             };
             setFilters({
-              status: "all",
+              checked: "all",
               sortBy: "updatedAt",
               sortOrder: "desc",
               page: 1,
-              pageSize: 10,
             });
             updateParams(defaultFilters);
           }}
