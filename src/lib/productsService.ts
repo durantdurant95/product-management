@@ -41,20 +41,35 @@ export const fetchProducts = async ({
     params.append("order", sortOrder);
   }
 
-  // Add status filtering if not "all"
-  // Only add the status parameter when not "all"
+  // Some Mock APIs use filter parameter instead of direct parameter name
+  // Try both ways to filter by status
   if (status !== "all") {
+    // Try direct status parameter
     params.append("status", status);
+    // Also try filter syntax that some APIs use
+    params.append("filter", `status=${status}`);
   }
 
   console.log(`API Request: ${API_URL}?${params.toString()}`);
 
   // Make the API request with query parameters
   const response = await fetch(`${API_URL}?${params.toString()}`);
+
   if (!response.ok) {
     throw new Error("Failed to fetch products");
   }
-  return response.json();
+
+  const products = await response.json();
+
+  // Fallback: If we still get all products when filtering,
+  // perform client-side filtering
+  if (status !== "all" && products.length > 0) {
+    return products.filter(
+      (product: { status: string }) => product.status === status
+    );
+  }
+
+  return products;
 };
 
 /**

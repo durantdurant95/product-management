@@ -7,18 +7,17 @@ import { ListChecks } from "lucide-react";
 import Link from "next/link";
 
 interface ProductsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     status?: string;
     sortBy?: string;
     sortOrder?: string;
     page?: string;
     pageSize?: string;
-  };
+  }>;
 }
 
-export default async function ProductsPage({
-  searchParams,
-}: ProductsPageProps) {
+export default async function ProductsPage(props: ProductsPageProps) {
+  const searchParams = await props.searchParams;
   // Parse filter parameters with defaults - ensure all are strings for consistent handling
   const filters = {
     status: searchParams.status || "all",

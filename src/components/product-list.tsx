@@ -2,9 +2,9 @@ import ProductCard from "@/components/product-card";
 import type { Product } from "@/lib/types";
 import { PackageSearch } from "lucide-react";
 
-interface ProductListProps {
+type ProductListProps = {
   products: Product[];
-}
+};
 
 export default function ProductList({ products }: ProductListProps) {
   if (products.length === 0) {
