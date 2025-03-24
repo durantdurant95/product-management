@@ -5,7 +5,6 @@
 import { revalidatePath } from "next/cache";
 import { Product } from "./types";
 
-// const API_URL = process.env.API_URL;
 const API_URL = "https://67e07e477635238f9aadaa54.mockapi.io/api/v1/products";
 if (!API_URL) {
   throw new Error("API_URL is not defined in environment variables");
@@ -58,32 +57,7 @@ export const createProduct = async (
   if (!response.ok) {
     throw new Error("Failed to create product");
   }
-  return response.json();
-};
-
-/**
- * Update an existing product by ID.
- * @param {string} id - The ID of the product to update.
- * @param {Product} product - The updated product data.
- * @returns {Promise<Product>} A promise that resolves to the updated product.
- */
-export const updateProduct = async (
-  id: string,
-  product: Omit<Product, "id" | "createdAt" | "updatedAt">
-): Promise<Product> => {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ...product,
-      updatedAt: new Date(),
-    }),
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to update product with ID: ${id}`);
-  }
+  revalidatePath("/");
   return response.json();
 };
 

@@ -30,13 +30,26 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-muted-foreground">{product.description}</p>
-        <div className="mt-2 flex flex-col gap-1">
+        <p className="text-muted-foreground">
+          {" "}
+          {product.description && product.description.length > 50
+            ? `${product.description.substring(0, 50)}...`
+            : product.description}
+        </p>
+        <div className="mt-12 flex w-full justify-between">
           <p className="text-xs text-muted-foreground">
-            Created: {product.createdAt.toLocaleString()}
+            Created:{" "}
+            {new Intl.DateTimeFormat("default", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            }).format(new Date(product.createdAt))}
           </p>
           <p className="text-xs text-muted-foreground">
-            Updated: {product.updatedAt.toLocaleString()}
+            Updated:{" "}
+            {new Intl.DateTimeFormat("default", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            }).format(new Date(product.updatedAt))}
           </p>
         </div>
       </CardContent>

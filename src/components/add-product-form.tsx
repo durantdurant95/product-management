@@ -57,6 +57,7 @@ export default function AddProductForm() {
               description,
               checked: false,
             });
+            setOpen(false);
           }}
         >
           <DialogHeader>
