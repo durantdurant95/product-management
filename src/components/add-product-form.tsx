@@ -67,8 +67,9 @@ export default function AddProductForm() {
 
                 return `Product "${name}" has been added`;
               },
-              error: (err) => {
+              error: (error) => {
                 setIsLoading(false);
+                console.error("Error adding product:", error);
                 return "Error adding product";
               },
             });

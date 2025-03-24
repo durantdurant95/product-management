@@ -30,8 +30,8 @@ export default async function HomePage() {
             <span className="text-primary">Effortlessly</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            A simple way to manage your product inventory and track what's been
-            checked and what needs attention.
+            A simple way to manage your product inventory and track what has
+            been checked and what needs attention.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/products">

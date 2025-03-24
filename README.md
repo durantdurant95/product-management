@@ -1,4 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ProductTracker
+
+ProductTracker is a web application for managing product lists. It allows users to track products with names, descriptions, and completion status.
+
+## Features
+
+- Product management with name, description, and checked status
+- Filtering capabilities to easily find products
+- Infinite scroll for efficient browsing of large product lists
+- Dark/light mode theme switching
+- Responsive design using Tailwind CSS
+- Modern UI components from shadcn
+- Built with Next.js for optimal performance
+- Backend powered by mockAPI
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org)
+- [Tailwind CSS](https://tailwindcss.com)
+- [shadcn/ui](https://ui.shadcn.com)
+- [mockAPI](https://mockapi.io) for backend services
 
 ## Getting Started
 
@@ -16,21 +36,15 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Integration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This application uses mockAPI to handle backend operations for product data management. The API endpoints handle:
 
-## Learn More
+- Retrieving product lists
+- Adding new products
+- Updating product status
+- Deleting products
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This application is already deployed on [Vercel](https://vercel.com) and can be accessed at [https://product-tracker.vercel.app](https://product-tracker.vercel.app). Vercel provides continuous deployment with automatic updates whenever changes are pushed to the main branch.

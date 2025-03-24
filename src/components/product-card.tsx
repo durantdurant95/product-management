@@ -39,8 +39,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           setIsDeleting(false);
           return `Product "${product.name}" has been deleted`;
         },
-        error: (err) => {
+        error: (error) => {
           setIsDeleting(false);
+          console.error("Error deleting product:", error);
           return "Error deleting product";
         },
       });
@@ -64,8 +65,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           setIsUpdating(false);
           return `Product "${product.name}" has been marked as ${statusText}`;
         },
-        error: (err) => {
+        error: (error) => {
           setIsUpdating(false);
+          console.error("Error updating product status:", error);
           return "Error updating product status";
         },
       });

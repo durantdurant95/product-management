@@ -41,6 +41,48 @@ export default function ProductsPage() {
     setRefreshTrigger((prev) => prev + 1);
   }, []);
 
+  // Function to load more products - wrapped in useCallback
+  const loadMoreProducts = useCallback(async () => {
+    if (loading || !hasMore) return;
+
+    const nextPage = currentPage + 1;
+    setLoading(true);
+
+    try {
+      // Convert string param to boolean or null
+      let checkedParam = null;
+      if (filters.checked === "true") checkedParam = true;
+      if (filters.checked === "false") checkedParam = false;
+
+      const newProducts = await fetchProducts({
+        checked: checkedParam,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        page: nextPage,
+        pageSize: ITEMS_PER_PAGE,
+      });
+
+      if (newProducts.length > 0) {
+        setProducts((prev) => [...prev, ...newProducts]);
+        setCurrentPage(nextPage);
+        setHasMore(newProducts.length === ITEMS_PER_PAGE);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error loading more products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    loading,
+    hasMore,
+    currentPage,
+    filters.checked,
+    filters.sortBy,
+    filters.sortOrder,
+  ]);
+
   // Listen for product events
   useEffect(() => {
     const handleProductUpdated = () => {
@@ -113,42 +155,7 @@ export default function ProductsPage() {
         observer.unobserve(currentLoaderRef);
       }
     };
-  }, [loaderRef, hasMore, loading]);
-
-  // Function to load more products
-  const loadMoreProducts = async () => {
-    if (loading || !hasMore) return;
-
-    const nextPage = currentPage + 1;
-    setLoading(true);
-
-    try {
-      // Convert string param to boolean or null
-      let checkedParam = null;
-      if (filters.checked === "true") checkedParam = true;
-      if (filters.checked === "false") checkedParam = false;
-
-      const newProducts = await fetchProducts({
-        checked: checkedParam,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-        page: nextPage,
-        pageSize: ITEMS_PER_PAGE,
-      });
-
-      if (newProducts.length > 0) {
-        setProducts((prev) => [...prev, ...newProducts]);
-        setCurrentPage(nextPage);
-        setHasMore(newProducts.length === ITEMS_PER_PAGE);
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Error loading more products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [loaderRef, hasMore, loading, loadMoreProducts]);
 
   return (
     <main className="flex flex-col min-h-screen pb-8">
