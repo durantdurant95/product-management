@@ -14,17 +14,50 @@ import { Product } from "@/lib/types";
 import { ListChecks, Loader } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const ITEMS_PER_PAGE = 10;
 
+// Main page component
 export default function ProductsPage() {
+  return (
+    <main className="flex flex-col min-h-screen pb-8">
+      {/* Navigation */}
+      <header className="border-b">
+        <div className="container mx-auto py-4 lg:py-8 px-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <ListChecks className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl">ProductTracker</span>
+          </Link>
+          <div className="flex items-center space-x-2">
+            <AddProductForm />
+            <ModeToggle />
+          </div>
+        </div>
+      </header>
+
+      {/* Wrap the component that uses useSearchParams in Suspense */}
+      <Suspense
+        fallback={
+          <div className="container py-8 flex justify-center">
+            <Loader className="animate-spin" />
+          </div>
+        }
+      >
+        <ProductsContent />
+      </Suspense>
+    </main>
+  );
+}
+
+// Client component that uses useSearchParams
+function ProductsContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add a refresh trigger state
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // Parse filter parameters with defaults
@@ -130,7 +163,7 @@ export default function ProductsPage() {
     };
 
     loadInitialProducts();
-  }, [filters.checked, filters.sortBy, filters.sortOrder, refreshTrigger]); // Add refreshTrigger as dependency
+  }, [filters.checked, filters.sortBy, filters.sortOrder, refreshTrigger]);
 
   // Set up intersection observer for infinite scroll
   useEffect(() => {
@@ -157,50 +190,34 @@ export default function ProductsPage() {
   }, [loaderRef, hasMore, loading, loadMoreProducts]);
 
   return (
-    <main className="flex flex-col min-h-screen pb-8">
-      {/* Navigation */}
-      <header className="border-b">
-        <div className="container mx-auto py-4 lg:py-8 px-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <ListChecks className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">ProductTracker</span>
-          </Link>
-          <div className="flex items-center space-x-2">
-            <AddProductForm />
-            <ModeToggle />
-          </div>
+    <section className="container">
+      {/* Filters */}
+      <ProductFilters currentFilters={filters} />
+
+      {/* Products grid */}
+      {products.length === 0 && !loading ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No products found</p>
         </div>
-      </header>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onProductDeleted={refreshProducts}
+            />
+          ))}
+        </div>
+      )}
 
-      <section className="container">
-        {/* Filters */}
-        <ProductFilters currentFilters={filters} />
-
-        {/* Products grid */}
-        {products.length === 0 && !loading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No products found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onProductDeleted={refreshProducts} // Pass refresh function to ProductCard
-              />
-            ))}
-          </div>
+      {/* Loading indicator */}
+      <div ref={loaderRef} className="py-4 text-center flex justify-center">
+        {loading && <Loader className="animate-spin" />}
+        {!hasMore && products.length > 0 && !loading && (
+          <p className="text-muted-foreground">No more products to load</p>
         )}
-
-        {/* Loading indicator */}
-        <div ref={loaderRef} className="py-4 text-center flex justify-center">
-          {loading && <Loader className="animate-spin" />}
-          {!hasMore && products.length > 0 && !loading && (
-            <p className="text-muted-foreground">No more products to load</p>
-          )}
-        </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
