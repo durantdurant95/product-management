@@ -14,7 +14,7 @@ export default async function HomePage() {
             <span className="font-bold text-xl">ProductTracker</span>
           </Link>
           <div className="flex items-center space-x-2">
-            <Link href="/dashboard">
+            <Link href="/products">
               <Button variant="outline">Get started</Button>
             </Link>
             <ModeToggle />
@@ -34,14 +34,9 @@ export default async function HomePage() {
             checked and what needs attention.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/dashboard">
+            <Link href="/products">
               <Button size="lg" className="gap-2">
                 Get Started <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="#features">
-              <Button size="lg" variant="outline">
-                Learn More
               </Button>
             </Link>
           </div>
@@ -97,7 +92,7 @@ export default async function HomePage() {
             Join thousands of users who are already managing their products more
             efficiently.
           </p>
-          <Link href="/dashboard">
+          <Link href="/products">
             <Button size="lg">
               Try ProductTracker Now <ArrowRight className="h-4 w-4" />
             </Button>
@@ -114,7 +109,7 @@ export default async function HomePage() {
               <span className="font-bold">ProductTracker</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} ProductTracker. All rights reserved.
+              © {new Date().getFullYear()} ProductTracker
             </div>
           </div>
         </div>
