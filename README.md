@@ -47,4 +47,4 @@ This application uses mockAPI to handle backend operations for product data mana
 
 ## Deployment
 
-This application is already deployed on [Vercel](https://vercel.com) and can be accessed at [https://product-tracker.vercel.app](https://product-tracker.vercel.app). Vercel provides continuous deployment with automatic updates whenever changes are pushed to the main branch.
+This application is already deployed on [Vercel](https://vercel.com) and can be accessed at [https://product-management-theta-jet.vercel.app/](https://product-management-theta-jet.vercel.app/). Vercel provides continuous deployment with automatic updates whenever changes are pushed to the main branch.
