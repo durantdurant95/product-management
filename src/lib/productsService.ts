@@ -11,11 +11,46 @@ if (!API_URL) {
 }
 
 /**
- * Fetch all products from the API.
+ * Fetch products from the API with filtering and sorting options.
+ * @param {Object} options - Filtering and pagination options
  * @returns {Promise<Product[]>} A promise that resolves to an array of products.
  */
-export const fetchProducts = async (): Promise<Product[]> => {
-  const response = await fetch(API_URL);
+export const fetchProducts = async ({
+  page = 1,
+  pageSize = 10,
+  status = "all",
+  sortBy = "updatedAt",
+  sortOrder = "desc",
+}: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: string;
+} = {}): Promise<Product[]> => {
+  // Build query parameters
+  const params = new URLSearchParams();
+
+  // Add pagination
+  params.append("page", page.toString());
+  params.append("limit", pageSize.toString());
+
+  // Add sorting (MockAPI uses sortBy and order parameters)
+  if (sortBy) {
+    params.append("sortBy", sortBy);
+    params.append("order", sortOrder);
+  }
+
+  // Add status filtering if not "all"
+  // Only add the status parameter when not "all"
+  if (status !== "all") {
+    params.append("status", status);
+  }
+
+  console.log(`API Request: ${API_URL}?${params.toString()}`);
+
+  // Make the API request with query parameters
+  const response = await fetch(`${API_URL}?${params.toString()}`);
   if (!response.ok) {
     throw new Error("Failed to fetch products");
   }
@@ -62,9 +97,9 @@ export const createProduct = async (
 };
 
 /**
- * Update only the status of an existing product by ID.
+ * Update the status of an existing product by ID.
  * @param {string} id - The ID of the product to update status for.
- * @param {string} checked - The new status value.
+ * @param {boolean} checked - Whether the product is checked or not.
  * @returns {Promise<Product>} A promise that resolves to the updated product.
  */
 export const updateProductStatus = async (
@@ -77,7 +112,7 @@ export const updateProductStatus = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      checked,
+      status: checked ? "checked" : "unchecked",
       updatedAt: new Date(),
     }),
   });

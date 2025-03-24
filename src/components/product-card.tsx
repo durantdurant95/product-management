@@ -22,7 +22,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle>{product.name}</CardTitle>
-          {product.checked && (
+          {product.status === "checked" && (
             <Badge variant="default" className="rounded-full w-8 h-8">
               <Check className="h-6 w-6" />
             </Badge>
@@ -55,13 +55,15 @@ export default function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       <CardFooter className="flex justify-between pt-4 border-t">
         <Button
-          variant={product.checked ? "outline" : "default"}
+          variant={product.status === "checked" ? "outline" : "default"}
           size="sm"
           type="submit"
           className="transition-all duration-200"
-          onClick={() => updateProductStatus(product.id, !product.checked)}
+          onClick={() =>
+            updateProductStatus(product.id, product.status !== "checked")
+          }
         >
-          {product.checked ? "Uncheck" : "Check"}
+          {product.status === "checked" ? "Uncheck" : "Check"}
         </Button>
         <Button
           variant="destructive"

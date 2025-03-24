@@ -55,8 +55,10 @@ export default function AddProductForm() {
             createProduct({
               name,
               description,
-              checked: false,
+              status: "unchecked",
             });
+            setName("");
+            setDescription("");
             setOpen(false);
           }}
         >
